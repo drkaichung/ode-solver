@@ -1,14 +1,12 @@
 import math
 
-from sympy import symbols, Function, Eq, dsolve, sympify, sin, cos, solve, pi
-
-
-
+from sympy import symbols, Function, plot,Derivative, Eq, dsolve, sympify, sin, cos, solve, pi, Derivative
+from sympy.core.backend import sympify
 
 x= symbols('x')
 t = symbols('t')
 y= Function('y')
-c1 = symbols('C1')
+c1,c2= symbols('C1'), symbols('C2')
 
 
 while True:
@@ -20,24 +18,49 @@ while True:
     except Exception as e:
         print("Error! Put in a valid ODE: ",e)
         continue
+
 try:
     ode_solution= dsolve(expression,y(x))
     print("This is the general solution:", ode_solution)
-
 except Exception as e:
     print("ODE only please!",e)
+    exit()
 
-y0 = sympify(input("Enter the initial condition:"))
+derivative_order =  max((d.derivative_count for d in expression.atoms(Derivative)), default = 0)
 
-if y0 != "":
-    eq = ode_solution.subs(x,0)
-    eq2 = eq.subs(y(0),y0)
-    c1_value = solve(eq2, c1)[0]
-    particular_soln = ode_solution.subs(c1, c1_value)
-    print("particular solution", particular_soln)
+solution = ode_solution.rhs.removeO()
+
+particular_soln = None
+if derivative_order == 0:
+     print ("This is not not a valid ODE. There are no derivatives")
+elif derivative_order == 1:
+    y_0 = (input("Enter the first initial condition: "))
+    if y_0 != "":
+        y0 = sympify(y_0)
+        c1_value = solve(solution.subs(x,0) -  y0,c1)[0]
+        particular_soln = solution.subs(c1, c1_value)
+        print("particular solution:", particular_soln)
+
+elif derivative_order == 2:
+    y_0 = (input("Enter the first initial condition: "))
+    y_1 =(input("Enter the second initial condition: "))
+    if y_0 != "" and y_1 !="":
+        y0 = sympify(y_0)
+        dy0 = sympify(y_1)
+        equations = [solution.subs(x,0)-y0,
+                     solution.diff(x).subs(x,0)-dy0]
+        c_values= solve(equations, [c1,c2])
+        particular_soln = solution.subs(c_values)
+        print("particular solution: ", particular_soln)
+
 else:
     print("General solution with no initial conditions", ode_solution)
 
+if particular_soln is None:
+    print("No plot: No particular solution")
+else:
+    plotable_equation = plot(particular_soln, (x,0,5), title = "y(x)=" + str(particular_soln),xlabel = 'x', ylabel = 'y(x)') #this starts at 0 and ends at 10
+    plotable_equation.show()
 
 
 
