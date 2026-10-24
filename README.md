@@ -3,7 +3,7 @@ A python tool that solves first and second order differntial equations
 
 # Example
 Equations: y.diff(x,2) + sin(x) * y
-y(0) = 1
+y(0) = 0
 y'(0) = pi
 
 Solution:
