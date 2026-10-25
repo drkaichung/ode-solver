@@ -1,6 +1,6 @@
 import math
 
-from sympy import symbols, Function, plot, Derivative, Eq, dsolve, sympify, sin, cos, solve, pi, I
+from sympy import symbols, Function, plot, Derivative, Eq, dsolve, sympify, sin, cos, solve, pi, I, E, exp
 
 
 x= symbols('x')
@@ -14,9 +14,9 @@ while True:
     try:
         if "=" in expression:
             lhs, rhs = expression.split("=")
-            expression = Eq(sympify(lhs, locals={'x':x,'t':t,'y':y(x)}), sympify(rhs, locals={'x':x,'t':t, 'y':y(x)}))
+            expression = Eq(sympify(lhs, locals={'x':x,'t':t,'y':y(x), 'exp': exp}), sympify(rhs, locals={'x':x,'t':t, 'y':y(x), 'exp': exp}))
         else:
-            expresion = sympify(expression, locals={'x':x,'t':t,'y':y(x),})
+            expresion = sympify(expression, locals={'x':x,'t':t,'y':y(x),'exp': exp})
         break
 
     except Exception as e:
@@ -25,11 +25,15 @@ while True:
 
 try:
     ode_solution= dsolve(expression,y(x))
-    real_solution = []
-    for sol in ode_solution:
-        if not sol.rhs.has(I):
-            real_solution.append(sol)
-            ode_solution = real_solution[0]
+    if isinstance(ode_solution,list):
+
+        real_solution = []
+        for sol in ode_solution:
+            if not sol.rhs.has(I):
+                real_solution.append(sol)
+        if not real_solution:
+            real_solution = ode_solution
+        ode_solution = real_solution[0]
 
     print("This is the general solution:", ode_solution)
 except Exception as e:
