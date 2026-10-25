@@ -1,34 +1,46 @@
 import math
 
-from sympy import symbols, Function, plot,Derivative, Eq, dsolve, sympify, sin, cos, solve, pi, Derivative
-from sympy.core.backend import sympify
+from sympy import symbols, Function, plot, Derivative, Eq, dsolve, sympify, sin, cos, solve, pi, I
+
 
 x= symbols('x')
 t = symbols('t')
-y= Function('y')
+y= Function('y', real = True)
 c1,c2= symbols('C1'), symbols('C2')
 
 
 while True:
-    text =(input("What is your function?: "))
+    expression =(input("What is your function?: "))
     try:
-        expression =sympify(text, locals={'x':x,'t':t,'y':y(x),
-                            'sin': sin, 'cos': cos})
+        if "=" in expression:
+            lhs, rhs = expression.split("=")
+            expression = Eq(sympify(lhs, locals={'x':x,'t':t,'y':y(x)}), sympify(rhs, locals={'x':x,'t':t, 'y':y(x)}))
+        else:
+            expresion = sympify(expression, locals={'x':x,'t':t,'y':y(x),})
         break
+
     except Exception as e:
         print("Error! Put in a valid ODE: ",e)
         continue
 
 try:
     ode_solution= dsolve(expression,y(x))
+    real_solution = []
+    for sol in ode_solution:
+        if not sol.rhs.has(I):
+            real_solution.append(sol)
+            ode_solution = real_solution[0]
+
     print("This is the general solution:", ode_solution)
 except Exception as e:
     print("ODE only please!",e)
     exit()
 
+solution = ode_solution.rhs
+
+
 derivative_order =  max((d.derivative_count for d in expression.atoms(Derivative)), default = 0)
 
-solution = ode_solution.rhs.removeO()
 
 particular_soln = None
 if derivative_order == 0:
